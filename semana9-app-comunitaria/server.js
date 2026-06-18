@@ -7,32 +7,49 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const APP_NAME = process.env.APP_NAME || "App Comunitaria";
 const APP_ENV = process.env.APP_ENV || "development";
+const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
+const REQUIRE_TELEGRAM = process.env.REQUIRE_TELEGRAM === "true";
+
+if (REQUIRE_TELEGRAM && !TELEGRAM_BOT_TOKEN) {
+  console.error("ERROR_OPERATIVO: REQUIRE_TELEGRAM está activo, pero falta TELEGRAM_BOT_TOKEN.");
+  console.error("SUGERENCIA: Revise el archivo .env sin publicar credenciales.");
+  // process.exit(1);
+}
 
 app.use(express.json());
+
+function existeTokenTelegram() {
+  return Boolean(TELEGRAM_BOT_TOKEN);
+}
 
 app.get("/", (req, res) => {
   res.send(`
     <h1>${APP_NAME}</h1>
-    <p>Aplicación levantada correctamente en entorno: ${APP_ENV}</p>
-    <p>Clase 41 - Entorno de despliegue y primer levantamiento</p>
+    <p>Aplicación activa.</p>
+    <p>Clase 42 - Seguridad operativa aplicada</p>
   `);
 });
 
+app.get("/fallo-controlado", (req, res) => {
+  console.error("ERROR_SIMULADO: Se ejecutó la ruta /fallo-controlado para práctica de diagnóstico.");
+  res.status(500).json({
+    error: "Error simulado",
+    mensaje: "Esta ruta se usa solo para practicar diagnóstico."
+  });
+});
+
+
 app.get("/saludo", (req, res) => {
   res.json({
-    mensaje: "Hola. La aplicación comunitaria está respondiendo correctamente.",
-    clase: 41,
-    semana: 9
+    mensaje: "Hola. La aplicación comunitaria está respondiendo correctamente."
   });
 });
 
 app.get("/estado", (req, res) => {
+  console.log("alguien ejecutó estado...")
   res.json({
     estado: "activo",
-    servicio: APP_NAME,
-    entorno: APP_ENV,
-    puerto: PORT,
-    fecha: new Date().toISOString()
+    mensaje: "La aplicación está disponible"
   });
 });
 
@@ -40,10 +57,17 @@ app.get("/api/info", (req, res) => {
   res.json({
     programa: "Capacitación en Democracia y Tecnología",
     alias: "Programadores para la Paz",
-    modulo: "Sistemas Operativos de Código Abierto y Seguridad Digital",
     semana: 9,
-    clase: 41,
-    tema: "Entorno de despliegue y primer levantamiento"
+    clase: 42,
+    tema: "Seguridad operativa aplicada"
+  });
+});
+
+app.get("/diagnostico", (req, res) => {
+  res.json({
+    entorno: APP_ENV,
+    telegramConfigurado: existeTokenTelegram(),
+    nota: "Esta ruta es de práctica. No muestra tokens ni credenciales."
   });
 });
 
@@ -55,8 +79,14 @@ app.use((req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`Servidor iniciado correctamente`);
+  console.log("Servidor iniciado correctamente");
   console.log(`Aplicación: ${APP_NAME}`);
   console.log(`Entorno: ${APP_ENV}`);
-  console.log(`Puerto: ${PORT}`);
+  console.log(`Puerto configurado: ${PORT}`);
+
+  if (existeTokenTelegram()) {
+    console.log("Telegram: token detectado, pero no se imprime por seguridad.");
+  } else {
+    console.warn("Telegram: token no configurado.");
+  }
 });
